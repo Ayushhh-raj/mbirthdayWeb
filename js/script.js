@@ -102,7 +102,7 @@ const birthdayConfig = {
     // Screen 6: Secret Letter Content (Handwritten typography)
     secretMessage: `Dear Mosina,
 
-Happy Birthday to someone who brings so much genuine warmth, grace, and joy into this world! 💖
+Happy Birthday MARDDD brings so much genuine warmth, grace, and joy into this world! 💖
 
 From the day you became a part of my life, you've held a deeply cherished place in my heart. Through all the smiles, the quiet moments, and the challenges you've faced with such strength, I want you to know how deeply you are loved, valued, and respected.
 
@@ -176,7 +176,10 @@ function startMusic() {
         backgroundMusic.play().then(() => {
             hasStartedMusic = true;
             updateMusicButtonUI(true);
-        }).catch(() => {});
+        }).catch(() => {
+            // If browser blocks unprompted autoplay, keep UI active and play on first touch/click
+            updateMusicButtonUI(true);
+        });
     }
 }
 
@@ -201,15 +204,12 @@ function updateMusicButtonUI(isPlaying) {
 
 function toggleMusicPlayback() {
     initAudio();
-
-    if (!hasStartedMusic) {
-        startMusic();
-        return;
-    }
+    if (!backgroundMusic) return;
 
     if (backgroundMusic.paused) {
         userManuallyMuted = false;
         backgroundMusic.play().then(() => {
+            hasStartedMusic = true;
             updateMusicButtonUI(true);
         }).catch(() => {});
     } else {
@@ -539,7 +539,7 @@ function createCakeScreen() {
             <div class="cake-header-info">
                 <span class="section-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Celebration Time</span>
                 <h2 class="gate-title">Birthday Cake 🎂</h2>
-                <p class="gate-subtitle">Click below to cut the cake and make a special wish</p>
+                <p class="gate-subtitle">Let's Cut the cake and make a special wish</p>
             </div>
 
             <div class="cinematic-cake-wrapper">
@@ -579,7 +579,7 @@ function createCakeScreen() {
             <div class="cake-action-wrap">
                 <button type="button" id="btn-cut-cake" class="premium-btn cta-cut-btn">
                     <span class="btn-sparkle">✨</span>
-                    <span>🎂 Let's Cut the Cake</span>
+                    <span>🎂 Shall be Cut the Cake</span>
                     <span class="btn-sparkle">✨</span>
                 </button>
             </div>
@@ -836,7 +836,7 @@ function createLetterPasswordScreen() {
                 <i class="fa-solid fa-envelope"></i>
             </div>
             <span class="section-badge"><i class="fa-solid fa-key"></i> Final Stage 03</span>
-            <h2 class="gate-title">A Secret Letter For Mosina</h2>
+            <h2 class="gate-title">A Secret Letter For You</h2>
             <p class="gate-subtitle">This letter is only for you. Enter the secret password to open it.</p>
 
             <form id="letter-password-form" class="gate-form" onsubmit="return false;">
@@ -926,7 +926,7 @@ function createLetterScreen() {
                 <div class="letter-paper">
                     <div class="letter-header">
                         <span class="letter-stamp">💌</span>
-                        <span class="letter-date">A Special Letter For you</span>
+                        <span class="letter-date">A Special Note for you Maalik</span>
                     </div>
                     <div id="letter-message-body" class="letter-message">${birthdayConfig.secretMessage}</div>
                     <div class="letter-signature-decor">
@@ -1071,7 +1071,12 @@ function triggerSparkles(targetElement) {
    12. APPLICATION INITIALIZATION & HISTORY NAVIGATION
    ========================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Floating music button listener
+    // 1. Initialize audio and start music by default
+    initAudio();
+    startMusic();
+    updateMusicButtonUI(true);
+
+    // 2. Floating music button listener
     const musicBtn = document.getElementById("music-toggle-btn");
     if (musicBtn) {
         musicBtn.addEventListener("click", (e) => {
@@ -1100,8 +1105,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 4. Initial Mount: Start on Screen 1 (Birthday)
-    const hashState = window.location.hash.replace("#", "");
-    const initialScreen = Object.values(APP_STATES).includes(hashState) ? hashState : APP_STATES.BIRTHDAY;
-    transitionTo(initialScreen, false);
+    // 4. Initial Mount: Always reset to Screen 1 (Birthday Home Page) at top of page
+    if (window.location.hash) {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    transitionTo(APP_STATES.BIRTHDAY, false);
+});
+
+// Prevent browser from restoring previous scroll position on refresh
+if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+}
+
+window.addEventListener("load", () => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 });
